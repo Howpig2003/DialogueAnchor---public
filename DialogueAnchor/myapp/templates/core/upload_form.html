@@ -1,0 +1,138 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-16 px-6">
+    <div class="bg-slate-800/50 p-10 rounded-3xl border border-slate-800 shadow-2xl backdrop-blur-md">
+        <h2 class="text-3xl font-black mb-10">貢獻新場景</h2>
+        
+        <div id="status-message" class="hidden mb-6 p-4 rounded-xl text-center font-bold"></div>
+
+        <form id="upload-form" method="POST" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-bold text-slate-400 mb-3">所屬作品</label>
+                <select name="work_id" id="work_id" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 text-white">
+                    {% for work in work_list %}
+                        <option value="{{ work.id }}">{{ work.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-400 mb-3">場景圖片</label>
+                <div class="relative group h-48 bg-slate-900 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center hover:border-indigo-500 transition cursor-pointer">
+                    <input type="file" id="image_file" name="image_file" accept="image/*" required class="absolute inset-0 opacity-0 cursor-pointer" 
+                           onchange="updateFilePreview(this)">
+                    
+                    <div id="upload-icon" class="mb-2 text-slate-500 group-hover:scale-110 transition-transform">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <p id="file-msg" class="text-slate-500 text-sm px-4 text-center">點擊或拖曳圖片至此</p>
+                </div>
+            </div>
+
+            <button type="submit" id="submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4 rounded-xl font-black text-lg shadow-lg shadow-indigo-600/20 transition flex items-center justify-center text-white">
+                <span id="btn-text">確認上傳</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 檔案選取後的 UI 變化
+    function updateFilePreview(input) {
+        const fileMsg = document.getElementById('file-msg');
+        const icon = document.getElementById('upload-icon');
+        if (input.files && input.files[0]) {
+            fileMsg.innerText = input.files[0].name;
+            fileMsg.classList.replace('text-slate-500', 'text-indigo-400');
+            icon.classList.add('text-indigo-500');
+        }
+    }
+
+    // 獲取 CSRF Token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const form = document.getElementById('upload-form');
+    const btn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const statusMsg = document.getElementById('status-message');
+
+    function showStatus(message, isSuccess) {
+        statusMsg.innerText = message;
+        statusMsg.className = `mb-6 p-4 rounded-xl text-center font-bold block ${
+            isSuccess ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' : 'bg-rose-500/20 text-rose-400 border border-rose-500/50'
+        }`;
+    }
+
+    form.onsubmit = async function(e) {
+        e.preventDefault();
+
+        // 1. UI 進入 Loading 狀態
+        btn.disabled = true;
+        btn.classList.add('opacity-70', 'cursor-not-allowed');
+        const originalBtnHtml = btnText.innerHTML;
+        btnText.innerHTML = `
+            <span class="flex items-center justify-center">
+                <svg class="animate-spin h-5 w-5 text-white mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>上傳中...</span>
+            </span>
+        `;
+        statusMsg.classList.add('hidden');
+
+        // 2. 準備數據
+        const formData = new FormData();
+        formData.append('work_id', document.getElementById('work_id').value);
+        formData.append('image_file', document.getElementById('image_file').files[0]);
+        
+        const csrftoken = getCookie('csrftoken');
+
+        try {
+            // 3. 發送請求 (請確認 URL 是否正確)
+            const response = await fetch('/my-app/upload-image/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': csrftoken }
+            });
+
+            const result = await response.json();
+
+            // 4. 處理結果
+            if (response.ok) {
+                showStatus('上傳成功！', true);
+                form.reset();
+                document.getElementById('file-msg').innerText = "點擊或拖曳圖片至此";
+                document.getElementById('upload-icon').classList.remove('text-indigo-500');
+            } else {
+                showStatus('錯誤：' + '發生異常', false);
+            }
+        } catch (error) {
+            showStatus('連線失敗，請檢查網路設定', false);
+        } finally {
+            // 5. 恢復按鈕狀態
+            btn.disabled = false;
+            btn.classList.remove('opacity-70', 'cursor-not-allowed');
+            btnText.innerHTML = originalBtnHtml;
+        }
+    };
+</script>
+{% endblock %}

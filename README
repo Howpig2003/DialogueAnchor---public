@@ -1,0 +1,235 @@
+# Dialogue Anchor ⚓
+
+一款基於 AI 向量搜尋技術的智慧影視場景檢索系統，讓您透過台詞快速定位經典畫面。
+
+## 📖 專案簡介
+
+Dialogue Anchor 是一個 Django Web 應用程式，結合了先進的 AI 向量搜尋技術，讓使用者能夠：
+- 輸入影視作品中的台詞，快速找到對應的場景畫面
+- 上傳並貢獻新的場景資料到資料庫
+- 透過直覺的網頁界面進行搜尋與管理
+
+## ✨ 核心功能
+
+### 🔍 場景檢索
+- **台詞搜尋**：輸入台詞內容，系統自動匹配最相關的場景圖片
+- **多筆結果**：支援回傳 1-25 筆搜尋結果，可自由調整數量
+- **作品篩選**：可指定特定影視作品進行搜尋
+- **即時預覽**：搜尋結果以卡片形式展示，包含場景圖片與對應台詞
+
+### 📤 場景上傳
+- **圖片上傳**：支援 PNG、JPG、GIF 格式，最大 10MB
+- **作品關聯**：可指定場景所屬的影視作品
+- **即時處理**：上傳後自動發送至 Webhook 進行 AI 分析
+- **權限控制**：需登入才能上傳場景
+
+### 👤 使用者系統
+- **會員註冊**：支援新使用者註冊帳號
+- **登入驗證**：安全的身份驗證機制
+- **權限管理**：部分功能需登入後才能使用
+
+## 🛠️ 技術架構
+
+### 後端技術
+- **框架**：Django 5.2.8
+- **資料庫**：支援 SQLite（預設）與 PostgreSQL
+- **API**：RESTful API 設計
+- **CORS**：支援跨域請求
+
+### 前端技術
+- **CSS 框架**：Tailwind CSS
+- **介面設計**：響應式設計，支援多種裝置
+- **互動**：JavaScript Fetch API 進行非同步請求
+
+### 部署支援
+- **容器化**：Docker + Docker Compose
+- **WSGI 伺服器**：Gunicorn
+- **靜態檔案**：集中管理與部署
+
+## 📁 專案結構
+
+```
+DialogueAnchor/
+├── DialogueAnchor/          # 主專案目錄
+│   ├── DialogueAnchor/      # 設定檔目錄
+│   │   ├── settings.py     # Django 設定
+│   │   ├── urls.py         # 主要 URL 路由
+│   │   └── wsgi.py         # WSGI 應用程式
+│   └── myapp/              # 主要應用程式
+│       ├── models.py       # 資料模型 (User, Work)
+│       ├── views.py        # 視圖函式
+│       ├── urls.py         # 應用程式 URL 路由
+│       ├── templates/      # HTML 模板
+│       │   ├── base/       # 基礎模板
+│       │   └── core/       # 核心頁面
+│       └── utils/          # 工具函式
+│           ├── query_image.py    # 圖片查詢 API
+│           ├── get_work_list.py  # 作品清單
+│           └── init_data.py      # 初始資料
+├── Dockerfile              # Docker 映像檔設定
+├── docker-compose.yml      # Docker Compose 配置
+├── entrypoint.sh          # 容器啟動腳本
+└── requirements.txt       # Python 相依套件
+```
+
+## 🚀 快速開始
+
+### 使用 Docker（推薦）
+
+1. **克隆專案**
+```bash
+git clone <repository-url>
+cd DialogueAnchor
+```
+
+2. **設定環境變數**
+建立 `.env` 檔案：
+```env
+SECRET_KEY=your-secret-key
+DATABASE_ENGINE=sqlite  # 或 postgres
+api_query_url=https://your-api-endpoint.com/query
+api_upload_url=https://your-api-endpoint.com/upload
+query_key=your-query-api-key
+upload_key=your-upload-api-key
+```
+
+3. **啟動服務**
+```bash
+docker-compose up -d
+```
+
+4. **訪問應用程式**
+開啟瀏覽器，前往 `http://localhost:8000`
+
+### 本地開發
+
+1. **建立虛擬環境**
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+```
+
+2. **安裝相依套件**
+```bash
+pip install -r requirements.txt
+```
+
+3. **執行資料庫遷移**
+```bash
+cd DialogueAnchor
+python manage.py migrate
+```
+
+4. **啟動開發伺服器**
+```bash
+python manage.py runserver
+```
+
+## 🔧 設定說明
+
+### 環境變數
+
+| 變數名稱 | 說明 | 預設值 |
+|---------|------|--------|
+| `SECRET_KEY` | Django 密鑰 | - |
+| `DATABASE_ENGINE` | 資料庫類型 | `sqlite` |
+| `POSTGRES_DB` | PostgreSQL 資料庫名稱 | `postgres` |
+| `POSTGRES_USER` | PostgreSQL 使用者 | `postgres` |
+| `POSTGRES_PASSWORD` | PostgreSQL 密碼 | - |
+| `api_query_url` | 圖片查詢 API 端點 | - |
+| `api_upload_url` | 圖片上傳 API 端點 | - |
+| `query_key` | 查詢 API 金鑰 | - |
+| `upload_key` | 上傳 API 金鑰 | - |
+
+### 資料庫選擇
+
+**使用 SQLite（開發環境）：**
+```env
+DATABASE_ENGINE=sqlite
+```
+
+**使用 PostgreSQL（生產環境）：**
+```env
+DATABASE_ENGINE=postgres
+POSTGRES_DB=your_database
+POSTGRES_USER=your_user
+POSTGRES_PASSWORD=your_password
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+```
+
+## 📡 API 端點
+
+### 圖片查詢 API
+- **端點**：`GET /my-app/api/search/`
+- **參數**：
+  - `work_id`: 作品 ID
+  - `text`: 查詢台詞內容
+  - `query_count`: 回傳數量 (1-25)
+- **回傳**：JSON 格式的場景資料
+
+### 圖片上傳 API
+- **端點**：`POST /my-app/upload-image/`
+- **參數**：
+  - `work_id`: 作品 ID
+  - `image_file`: 圖片檔案
+- **需求**：需要登入驗證
+
+## 📄 資料模型
+
+### User（使用者）
+```python
+- user_name: 使用者名稱（唯一）
+- hashed_password: 雜湊密碼
+```
+
+### Work（作品）
+```python
+- work_name: 作品名稱（唯一）
+```
+
+## 🎨 介面特色
+
+- **深色主題**：護眼的深色介面設計
+- **響應式佈局**：支援桌面、平板、手機
+- **漸層特效**：現代化的視覺效果
+- **動態載入**：流暢的頁面互動體驗
+
+## 🔒 安全性
+
+- CSRF 保護機制
+- 密碼雜湊儲存
+- 登入驗證裝飾器
+- CORS 白名單設定
+
+## 📝 授權條款
+
+本專案採用 MIT License
+
+## 👥 作者資訊
+
+**姓名：** _[陳柏豪]_  
+**GitHub：** _[Howpig2003]_  
+
+**姓名：** _[詹朝成]_  
+**GitHub：** _[Whitetwo0428]_  
+
+## 🤝 貢獻指南
+
+歡迎提交 Issue 或 Pull Request 來改善本專案！
+
+1. Fork 本專案
+2. 建立您的功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交您的變更 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 開啟 Pull Request
+
+## 📞 支援與回饋
+
+如有任何問題或建議，歡迎透過以下方式聯絡：
+- 提交 GitHub Issue
+- 發送 Email 至作者信箱
+
+---
+
+**Made with 💙 by Dialogue Anchor Team**

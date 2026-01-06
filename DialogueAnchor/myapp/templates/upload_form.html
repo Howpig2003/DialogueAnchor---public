@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>圖片上傳至 Webhook</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 8px; margin-top: 5px; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; margin-top: 20px; border: none; cursor: pointer; border-radius: 4px; }
+        #statusMessage { margin-top: 20px; padding: 10px; border-radius: 4px; display: none; }
+        .success { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>上傳圖片並轉發 Webhook</h2>
+        <form id="uploadForm">
+            {% csrf_token %}
+            <label for="work_id">工作 ID (work_id):</label>
+            <input type="text" id="work_id" name="work_id" required placeholder="請輸入 Work ID"><br>
+            
+            <label for="image_file">選擇圖片檔案:</label>
+            <input type="file" id="image_file" name="image_file" accept="image/*" required><br>
+            
+            <button type="submit" id="uploadButton">上傳並發送</button>
+        </form>
+
+        <div id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        // 輔助函數：從 Cookie 中獲取 CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const form = document.getElementById('uploadForm');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // 顯示狀態訊息的函數
+        function showStatus(message, isSuccess) {
+            statusMessage.textContent = message;
+            statusMessage.style.display = 'block';
+            statusMessage.className = isSuccess ? 'success' : 'error';
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // 阻止表單的預設提交行為
+            
+            statusMessage.style.display = 'none'; // 重設訊息
+            
+            const fileInput = document.getElementById('image_file');
+            const workIdInput = document.getElementById('work_id');
+            const file = fileInput.files[0];
+            const workId = workIdInput.value;
+            
+            if (!file || !workId) {
+                showStatus('請選擇檔案並填寫 Work ID！', false);
+                return;
+            }
+
+            // 1. 創建 FormData 物件來封裝檔案和數據
+            const formData = new FormData();
+            formData.append('work_id', workId);
+            formData.append('image_file', file);
+            
+            // 2. 獲取 CSRF token (因為後端 view 沒有使用 @csrf_exempt)
+            const csrftoken = getCookie('csrftoken'); 
+
+            try {
+                // 3. 使用 Fetch API 發送 POST 請求
+                const response = await fetch('/my-app/upload-image/', {
+                    method: 'POST',
+                    body: formData, // FormData 會自動設定 Content-Type: multipart/form-data
+                    headers: { 
+                        'X-CSRFToken': csrftoken 
+                    }, 
+                });
+
+                const result = await response.json();
+                
+                // 4. 處理回應
+                if (response.ok) {
+                    showStatus('上傳成功！ Webhook 狀態: ' + result.webhook_status + ' - ' + result.message, true);
+                } else {
+                    // 即使伺服器有回應 (例如 400, 500)，但不是 200 OK，也會進入這裡
+                    const errorMessage = result.error || result.message || '未知錯誤';
+                    showStatus(`上傳失敗 (狀態碼: ${response.status}): ${errorMessage}`, false);
+                }
+            } catch (error) {
+                // 5. 處理網路連線錯誤
+                console.error('連線錯誤:', error);
+                showStatus('連線到伺服器時發生錯誤，請檢查網路。', false);
+            }
+        });
+    </script>
+</body>
+</html>

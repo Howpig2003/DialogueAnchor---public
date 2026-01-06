@@ -1,0 +1,64 @@
+{% extends "base/base.html" %}
+
+{% block title %}上傳場景{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-2xl">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6 text-center">
+        上傳新場景圖片與資訊
+    </h1>
+    
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <div class="space-y-2">
+            <label for="{{ form.work_title.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                作品名稱
+            </label>
+            <input type="text" name="{{ form.work_title.name }}" id="{{ form.work_title.id_for_label }}" 
+                   class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" 
+                   value="{{ form.work_title.value|default:'' }}" required>
+        </div>
+
+        <div class="space-y-2">
+            <label for="{{ form.episode_info.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                集數資訊 (例: S01E03)
+            </label>
+            <input type="text" name="{{ form.episode_info.name }}" id="{{ form.episode_info.id_for_label }}" 
+                   class="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" 
+                   value="{{ form.episode_info.value|default:'' }}" required>
+        </div>
+
+        <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">
+                上傳場景圖片
+            </label>
+            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div class="space-y-1 text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                        <path d="M28 8H10c-1.1 0-2 .9-2 2v28c0 1.1.9 2 2 2h28c1.1 0 2-.9 2-2V18m-4-10H20v8h8V8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+                    </svg>
+                    <div class="flex text-sm text-gray-600">
+                        <label for="{{ form.image.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:ring-indigo-500">
+                            <span>選擇檔案</span>
+                            {{ form.image }} </label>
+                        <p class="pl-1">或拖曳到此</p>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        PNG, JPG, GIF 最高 10MB
+                    </p>
+                </div>
+            </div>
+            {% if form.image.errors %}
+                <p class="text-red-500 text-xs italic mt-1">{{ form.image.errors.as_text }}</p>
+            {% endif %}
+        </div>
+
+        <div>
+            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-green-600 hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150">
+                上傳並分析場景
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

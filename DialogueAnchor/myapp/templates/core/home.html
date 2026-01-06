@@ -1,0 +1,24 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<section class="min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
+    <div class="max-w-3xl">
+        <h1 class="text-6xl md:text-7xl font-black mb-8 leading-tight tracking-tighter">
+            找回記憶中的<br>
+            <span class="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">那一場戲</span>
+        </h1>
+        <p class="text-xl text-slate-400 mb-12 leading-relaxed">
+            Dialogue Anchor 是一款智慧影視搜尋系統。結合 AI 向量搜尋技術，<br>
+            只需輸入一句台詞，就能瞬間從影視資料庫中精確定位經典畫面。
+        </p>
+        <div class="flex flex-col sm:flex-row gap-6 justify-center">
+            <a href="{% url 'myapp:query_image' %}" class="px-10 py-4 bg-indigo-600 hover:bg-indigo-500 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/30 transition transform hover:-translate-y-1">
+                立即搜尋
+            </a>
+            <a href="{% url 'myapp:upload_form' %}" class="px-10 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-2xl font-bold text-lg transition transform hover:-translate-y-1">
+                貢獻場景
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

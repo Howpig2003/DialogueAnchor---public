@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dialogue Anchor{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <header class="glass border-b border-slate-800 sticky top-0 z-50">
+        <div class="w-full px-10 py-4 flex justify-between items-center">
+            
+            <a href="{% url 'myapp:home' %}" class="flex items-center text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                ⚓ Dialogue Anchor
+            </a>
+
+            <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                <a href="{% url 'myapp:home' %}" class="hover:text-indigo-400 transition">首頁</a>
+                <a href="{% url 'myapp:query_image' %}" class="hover:text-indigo-400 transition">圖片查詢</a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'myapp:upload_form' %}" class="hover:text-indigo-400 transition">上傳場景</a>
+                {% endif %}
+            </nav>
+
+            <div class="flex items-center space-x-4">
+                {% if user.is_authenticated %}
+                <span class="text-xs text-slate-400">Hi, {{ user.username }}</span>
+                <a href="{% url 'myapp:logout' %}" class="text-xs bg-slate-800 px-3 py-2 rounded-lg hover:bg-slate-700">登出</a>
+                {% else %}
+                <a href="{% url 'myapp:login' %}" class="text-sm font-semibold">登入</a>
+                <a href="{% url 'myapp:register' %}" class="bg-indigo-600 px-4 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/20">註冊</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </header>
+
+    <main>{% block content %}{% endblock %}</main>
+</body>
+</html>
