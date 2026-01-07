@@ -214,15 +214,8 @@ POSTGRES_PORT=5432
 **姓名：** _[詹朝成]_  
 **GitHub：** _[Whitetwo0428]_  
 
-## 🤝 貢獻指南
-
-歡迎提交 Issue 或 Pull Request 來改善本專案！
-
-1. Fork 本專案
-2. 建立您的功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交您的變更 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 開啟 Pull Request
+## 🤝 注意
+此專案有使用AI進行程式碼生成，人為進行細節的修正
 
 ## 📞 支援與回饋
 
